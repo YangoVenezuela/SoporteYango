@@ -81,7 +81,7 @@ bot.on('callback_query', (callbackQuery) => {
             reply_markup: {
                 inline_keyboard: [
                     [{ text: "❌ Problemas con las recargas", callback_data: "form_recargas" }],
-                    [{ text: "👤 Problemas con pagos en general", callback_data: "form_pagos_general" }],
+                    [{ text: "👤 Problemas con pagos de usuariosl", callback_data: "form_pagos_general" }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
