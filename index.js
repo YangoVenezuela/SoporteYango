@@ -66,7 +66,7 @@ bot.on('callback_query', (callbackQuery) => {
     }
 
     if (data === 'menu_puntos') {
-        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación (ID de Telegram) se cargarán en segundo plano de forma automática:", { 
+        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos:", { 
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
