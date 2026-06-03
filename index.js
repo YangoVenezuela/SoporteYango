@@ -65,7 +65,7 @@ bot.on('callback_query', (callbackQuery) => {
     }
 
     if (data === 'menu_puntos') {
-        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación se cargarán en segundo plano de forma automática:", { 
+        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos:", { 
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
@@ -88,22 +88,22 @@ bot.on('callback_query', (callbackQuery) => {
         });
     }
     else if (data === 'form_recargas') {
-        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga. El sistema validará tu cuenta automáticamente:", {
+        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Recargas", url: getFormUrl('recargas', chatId) }],
+                    [{ text: "📝 Formulario de Recargas No Procesadas", url: getFormUrl('recargas', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
     else if (data === 'form_pagos_general') {
-        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace oficial para reportar tu inconveniente con los pagos de la plataforma:", {
+        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace para reportar tu inconveniente con los pagos de usuarios:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Pagos", url: getFormUrl('pagos', chatId) }],
+                    [{ text: "📝 Formulario de Problemas con Pagos", url: getFormUrl('pagos', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
@@ -137,13 +137,13 @@ app.post('/webhook-google-forms', (req, res) => {
                   `🆔 *Cédula:* \`${identificador}\`\n` +
                   `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
                   `----------------------------------\n` +
-                  `📢 Estimado conductor, el sistema ha procesado la devolución de tus fondos de manera automática.\n\n` +
-                  `⏳ Por favor, verifica el balance en tu aplicación en los próximos minutos.`;
+                  `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado.\n\n` +
+                  `⏳ Por favor, ingresa a tu aplicación para verificar la actualización.`;
     } 
     // Si viene del envío automático normal de los formularios
     else {
         console.log(`📝 Procesando confirmación de formulario para el ID: ${telegramId}`);
-        mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
+        mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
                   `----------------------------------\n` +
                   `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
                   `📁 *Categoría:* ${tipoFormulario}\n` +
