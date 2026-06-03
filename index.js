@@ -119,7 +119,7 @@ app.post('/webhook-google-forms', (req, res) => {
     if (telegramId) {
         const identificador = cedula || "Registrado";
 
-        const mensajeConfirmacion = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
+        const mensajeConfirmacion = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
                                     `----------------------------------\n` +
                                     `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
                                     `📁 *Categoría:* ${tipoFormulario}\n` +
