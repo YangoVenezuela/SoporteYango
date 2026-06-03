@@ -10,19 +10,28 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-console.log("🚀 Bot de Yango operativo con enlaces pre-rellenados dinámicos...");
+console.log("🚀 Bot de Yango optimizado con enlaces pre-rellenados REALES...");
 
-// --- CONSTRUCTOR DE ENLACES INVISIBLES ---
-// Esta función inyecta automáticamente el ID de Telegram en la pregunta correcta de cada Form
+// --- CONFIGURACIÓN AUTOMÁTICA DEL MENÚ DE COMANDOS ---
+// Esto le pone un botón azul al usuario para que no tenga que escribir /start
+bot.setMyCommands([
+    { command: 'start', description: '📱 Iniciar el Bot de Soporte / Menú Principal' }
+]).then(() => {
+    console.log("✅ Menú de comandos configurado correctamente en Telegram.");
+}).catch((err) => {
+    console.error("❌ Error al configurar comandos:", err);
+});
+
+// --- CONSTRUCTOR DE ENLACES INVISIBLES CON TUS ENTRADAS REALES ---
 function getFormUrl(tipo, chatId) {
     if (tipo === 'pagos') {
-        return `https://docs.google.com/forms/d/e/1FAIpQLSe_bLP8Upgn3nmJTCUJ3z7hsQ1e7nhk5Bv7J4fGB9CMw4EfPA/viewform?usp=pp_url&entry.31682845=${chatId}`;
+        return `https://docs.google.com/forms/d/e/1FAIpQLSe_bLP8Upgn3nmJTCUJ3z7hsQ1e7nhk5Bv7J4fGB9CMw4EfPA/viewform?usp=pp_url&entry.1544457333=${chatId}`;
     }
     if (tipo === 'puntos') {
-        return `https://docs.google.com/forms/d/e/1FAIpQLSegmduBwLH33grUqRlj402wI06xAgsMjqrAl1Y2HikCzVJlIg/viewform?usp=pp_url&entry.464670002=${chatId}`;
+        return `https://docs.google.com/forms/d/e/1FAIpQLSegmduBwLH33grUqRlj402wI06xAgsMjqrAl1Y2HikCzVJlIg/viewform?usp=pp_url&entry.556681313=${chatId}`;
     }
     if (tipo === 'recargas') {
-        return `https://docs.google.com/forms/d/e/1FAIpQLSds-p_CE8Tdu86kSytCt5h9zrZTXigJkApoc5axPFGKyOGG3g/viewform?usp=pp_url&entry.1709403061=${chatId}`;
+        return `https://docs.google.com/forms/d/e/1FAIpQLSds-p_CE8Tdu86kSytCt5h9zrZTXigJkApoc5axPFGKyOGG3g/viewform?usp=pp_url&entry.489691155=${chatId}`;
     }
 }
 
@@ -56,7 +65,6 @@ bot.on('callback_query', (callbackQuery) => {
         return;
     }
 
-    // LÍNEA DE PUNTOS -> Abre el formulario directo de Puntos
     if (data === 'menu_puntos') {
         bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación se cargarán en segundo plano de forma automática:", { 
             parse_mode: 'Markdown',
@@ -68,8 +76,6 @@ bot.on('callback_query', (callbackQuery) => {
             }
         });
     }
-
-    // LÍNEA DE PAGOS -> Menú intermedio
     else if (data === 'menu_pagos') {
         bot.sendMessage(chatId, "💵 *Problemas con pagos*\n\nPor favor, selecciona la opción que mejor describa tu caso técnico para dirigirte al formulario correspondiente:", {
             parse_mode: 'Markdown',
@@ -82,8 +88,6 @@ bot.on('callback_query', (callbackQuery) => {
             }
         });
     }
-
-    // SUB-LÍNEA: RECARGAS NO PROCESADAS
     else if (data === 'form_recargas') {
         bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga. El sistema validará tu cuenta automáticamente:", {
             parse_mode: 'Markdown',
@@ -95,8 +99,6 @@ bot.on('callback_query', (callbackQuery) => {
             }
         });
     }
-
-    // SUB-LÍNEA: PROBLEMAS CON PAGOS (GENERAL)
     else if (data === 'form_pagos_general') {
         bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace oficial para reportar tu inconveniente con los pagos de la plataforma:", {
             parse_mode: 'Markdown',
@@ -115,7 +117,6 @@ app.post('/webhook-google-forms', (req, res) => {
     const { telegramId, tipoFormulario, cedula } = req.body;
 
     if (telegramId) {
-        // Usamos la cédula recolectada como el identificador del comprobante
         const identificador = cedula || "Registrado";
 
         const mensajeConfirmacion = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
@@ -133,7 +134,6 @@ app.post('/webhook-google-forms', (req, res) => {
     return res.status(200).send({ success: true });
 });
 
-// Iniciar el servidor express
 app.listen(PORT, () => {
     console.log(`📡 Servidor Webhook escuchando en el puerto ${PORT}`);
 });
