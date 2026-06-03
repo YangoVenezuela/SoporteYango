@@ -5,22 +5,21 @@ const express = require('express');
 const TOKEN = process.env.TELEGRAM_TOKEN; 
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// 2. CONFIGURACIÓN DEL SERVIDOR PARA RECIBIR DATOS DE GOOGLE
+// 2. CONFIGURACIÓN DEL SERVIDOR WEB (WEBHOOK)
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-console.log("🚀 Bot de Yango con enlaces e integración de Google Forms activa...");
+console.log("🚀 Bot de Yango con enlaces reales e integración de Google Forms activa...");
 
-// --- LINKS DE TUS GOOGLE FORMS ---
-// Reemplaza estos enlaces por los links reales para enviar a los usuarios
+// --- LINKS REALES DE TUS GOOGLE FORMS ---
 const LINKS_FORMS = {
-    puntos: "https://forms.gle/TuFormDePuntos",
-    recargas: "https://forms.gle/TuFormDeRecargas",
-    usuarios: "https://forms.gle/TuFormDeUsuarios"
+    puntos: "https://forms.gle/B9ST2RQ8jKyZvY4M7",
+    recargas: "https://forms.gle/g9yL397cgixBudp66",
+    pagos: "https://forms.gle/pnXFUyYMrVustFW17"
 };
 
-// --- MENÚ PRINCIPAL ---
+// --- FUNCIÓN: MENÚ PRINCIPAL ---
 function sendMainMenu(chatId) {
     bot.sendMessage(chatId, "¡Bienvenido al Bot de Soporte de Yango! ¿En qué te puedo ayudar hoy?", {
         reply_markup: {
@@ -32,11 +31,12 @@ function sendMainMenu(chatId) {
     });
 }
 
+// Escuchar comando /start
 bot.onText(/\/start/, (msg) => {
     sendMainMenu(msg.chat.id);
 });
 
-// --- ENRUTADOR DE BOTONES EN TELEGRAM ---
+// --- ENRUTADOR DE BOTONES (TELEGRAM) ---
 bot.on('callback_query', (callbackQuery) => {
     const msg = callbackQuery.message;
     const chatId = msg.chat.id;
@@ -44,13 +44,15 @@ bot.on('callback_query', (callbackQuery) => {
 
     bot.answerCallbackQuery(callbackQuery.id);
 
+    // Acción para volver al inicio
     if (data === 'menu_inicio') {
         sendMainMenu(chatId);
         return;
     }
 
+    // LÍNEA DE PUNTOS -> Envía directo al Form de Puntos
     if (data === 'menu_puntos') {
-        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nTu ID de Telegram es: `" + chatId + "` (Cópialo, lo necesitarás en el formulario).\n\nIngresa al enlace para completar tu reporte:", { 
+        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nTu ID de Telegram es: `" + chatId + "`\n\n⚠️ *IMPORTANTE:* Copia ese número de arriba, ya que es obligatorio que lo pegues dentro del formulario.\n\nIngresa al enlace para completar tu reporte:", { 
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
@@ -61,21 +63,23 @@ bot.on('callback_query', (callbackQuery) => {
         });
     }
 
+    // LÍNEA DE PAGOS -> Menú intermedio
     else if (data === 'menu_pagos') {
-        bot.sendMessage(chatId, "💵 *Problemas con pagos*\n\nPor favor, selecciona la opción que mejor describa tu caso:", {
+        bot.sendMessage(chatId, "💵 *Problemas con pagos*\n\nPor favor, selecciona la opción que mejor describa tu caso para darte el formulario correcto:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
                     [{ text: "❌ Problemas con las recargas", callback_data: "form_recargas" }],
-                    [{ text: "👤 Problemas con pago de usuarios", callback_data: "form_usuarios" }],
+                    [{ text: "👤 Problemas con pagos en general", callback_data: "form_pagos_general" }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
 
+    // SUB-LÍNEA: RECARGAS NO PROCESADAS
     else if (data === 'form_recargas') {
-        bot.sendMessage(chatId, "📥 *Formulario de Recargas*\n\nTu ID de Telegram es: `" + chatId + "`\n\nIngresa al siguiente enlace para reportar el inconveniente:", {
+        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nTu ID de Telegram es: `" + chatId + "`\n\n⚠️ *IMPORTANTE:* Copia ese número de arriba, ya que es obligatorio que lo pegues dentro del formulario.\n\nIngresa al siguiente enlace para reportar el inconveniente:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
@@ -86,12 +90,13 @@ bot.on('callback_query', (callbackQuery) => {
         });
     }
 
-    else if (data === 'form_usuarios') {
-        bot.sendMessage(chatId, "👤 *Formulario de Pago de Usuarios*\n\nTu ID de Telegram es: `" + chatId + "`\n\nIngresa al siguiente enlace para reportar el caso:", {
+    // SUB-LÍNEA: PROBLEMAS CON PAGOS (GENERAL)
+    else if (data === 'form_pagos_general') {
+        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nTu ID de Telegram es: `" + chatId + "`\n\n⚠️ *IMPORTANTE:* Copia ese número de arriba, ya que es obligatorio que lo pegues dentro del formulario.\n\nIngresa al siguiente enlace para reportar tu caso:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Usuarios", url: LINKS_FORMS.usuarios }],
+                    [{ text: "📝 Abrir Formulario de Pagos", url: LINKS_FORMS.pagos }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
@@ -100,8 +105,7 @@ bot.on('callback_query', (callbackQuery) => {
 });
 
 // --- RECEPTOR DE ALERTAS DESDE GOOGLE SHEETS ---
-// Cuando la hoja de cálculo nos avise de una respuesta, esto se activa
-app.post('/webhook-google-forms', (req, { res }) => {
+app.post('/webhook-google-forms', (req, res) => {
     const { telegramId, tipoFormulario } = req.body;
 
     if (telegramId) {
@@ -114,10 +118,10 @@ app.post('/webhook-google-forms', (req, { res }) => {
         bot.sendMessage(telegramId, mensajeConfirmacion, { parse_mode: 'Markdown' });
     }
     
-    return req.res.status(200).send({ success: true });
+    return res.status(200).send({ success: true });
 });
 
-// Encendemos el servidor web
+// Iniciar el servidor express
 app.listen(PORT, () => {
     console.log(`📡 Servidor Webhook escuchando en el puerto ${PORT}`);
 });
