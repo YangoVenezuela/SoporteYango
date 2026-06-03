@@ -115,36 +115,49 @@ bot.on('callback_query', (callbackQuery) => {
 
 // --- RECEPTOR DE ALERTAS DESDE GOOGLE SHEETS ---
 app.post('/webhook-google-forms', (req, res) => {
+    // Extraemos las variables que manda el Excel
     const { telegramId, tipoFormulario, cedula } = req.body;
 
-    if (telegramId) {
-        const identificador = cedula || "Registrado";
-        let mensaje;
+    console.log(`📥 Alerta recibida en Railway - Tipo: ${tipoFormulario}, ID: ${telegramId}`);
 
-        // 🎯 LÓGICA NUEVA: Si la alerta viene de una edición manual de estatus
-        if (tipoFormulario === "ACTUALIZACION_STATUS") {
-            mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
-                      `----------------------------------\n` +
-                      `🆔 *Cédula:* \`${identificador}\`\n` +
-                      `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
-                      `----------------------------------\n` +
-                      `📢 Estimado conductor, el sistema ha procesado la devolución de tus fondos de manera automática.\n\n` +
-                      `⏳ Por favor, verifica el balance en tu aplicación en los próximos minutos.`;
-        } 
-        // Lógica existente: Mensaje normal de confirmación de envío
-        else {
-            mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
-                      `----------------------------------\n` +
-                      `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
-                      `📁 *Categoría:* ${tipoFormulario}\n` +
-                      `👤 *Agente:* Sistema Automático\n` +
-                      `----------------------------------\n` +
-                      `✅ Tu reporte ha sido recibido con éxito.\n\n` +
-                      `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
-        }
-
-        bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' });
+    if (!telegramId) {
+        console.log("⚠️ Alerta ignorada: No se detectó un ID de Telegram válido.");
+        return res.status(200).send({ success: false, message: "No Telegram ID Provided" });
     }
+
+    const identificador = cedula || "Registrado";
+    let mensaje;
+
+    // 🎯 VALIDACIÓN: Si viene del cambio manual de estatus en el Excel
+    if (tipoFormulario === "ACTUALIZACION_STATUS" || tipoFormulario === "Soporte") {
+        mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
+                  `----------------------------------\n` +
+                  `🆔 *Cédula:* \`${identificador}\`\n` +
+                  `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
+                  `----------------------------------\n` +
+                  `📢 Estimado conductor, el sistema ha procesado la devolución de tus fondos de manera automática.\n\n` +
+                  `⏳ Por favor, verifica el balance en tu aplicación en los próximos minutos.`;
+    } 
+    // Si viene del envío normal de cualquiera de los formularios
+    else {
+        mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
+                  `----------------------------------\n` +
+                  `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
+                  `📁 *Categoría:* ${tipoFormulario}\n` +
+                  `👤 *Agente:* Sistema Automático\n` +
+                  `----------------------------------\n` +
+                  `✅ Tu reporte ha sido recibido con éxito.\n\n` +
+                  `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
+    }
+
+    // Enviamos el mensaje final al conductor
+    bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
+        .then(() => {
+            console.log(`✅ Mensaje enviado con éxito a Telegram al ID: ${telegramId}`);
+        })
+        .catch((err) => {
+            console.error(`❌ Error al enviar mensaje a Telegram:`, err);
+        });
     
     return res.status(200).send({ success: true });
 });
