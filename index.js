@@ -119,22 +119,32 @@ app.post('/webhook-google-forms', (req, res) => {
 
     if (telegramId) {
         const identificador = cedula || "Registrado";
+        let mensaje;
 
-        const mensajeConfirmacion = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
-                                    `----------------------------------\n` +
-                                    `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
-                                    `📁 *Categoría:* ${tipoFormulario}\n` +
-                                    `👤 *Agente:* Sistema Automático\n` +
-                                    `----------------------------------\n` +
-                                    `✅ Tu reporte ha sido recibido con éxito.\n\n` +
-                                    `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
+        // 🎯 LÓGICA NUEVA: Si la alerta viene de una edición manual de estatus
+        if (tipoFormulario === "ACTUALIZACION_STATUS") {
+            mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
+                      `----------------------------------\n` +
+                      `🆔 *Cédula:* \`${identificador}\`\n` +
+                      `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
+                      `----------------------------------\n` +
+                      `📢 Estimado conductor, el sistema ha procesado la devolución de tus fondos de manera automática.\n\n` +
+                      `⏳ Por favor, verifica el balance en tu aplicación en los próximos minutos.`;
+        } 
+        // Lógica existente: Mensaje normal de confirmación de envío
+        else {
+            mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
+                      `----------------------------------\n` +
+                      `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
+                      `📁 *Categoría:* ${tipoFormulario}\n` +
+                      `👤 *Agente:* Sistema Automático\n` +
+                      `----------------------------------\n` +
+                      `✅ Tu reporte ha sido recibido con éxito.\n\n` +
+                      `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
+        }
 
-        bot.sendMessage(telegramId, mensajeConfirmacion, { parse_mode: 'Markdown' });
+        bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' });
     }
     
     return res.status(200).send({ success: true });
-});
-
-app.listen(PORT, () => {
-    console.log(`📡 Servidor Webhook escuchando en el puerto ${PORT}`);
 });
