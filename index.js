@@ -31,6 +31,7 @@ function getFormUrl(tipo, chatId) {
         return `https://docs.google.com/forms/d/e/1FAIpQLSegmduBwLH33grUqRlj402wI06xAgsMjqrAl1Y2HikCzVJlIg/viewform?usp=pp_url&entry.556681313=${chatId}`;
     }
     if (tipo === 'recargas') {
+        // AQUÍ ESTÁ EL CAMBIO: Ya tiene tu número real 489691155
         return `https://docs.google.com/forms/d/e/1FAIpQLSds-p_CE8Tdu86kSytCt5h9zrZTXigJkApoc5axPFGKyOGG3g/viewform?usp=pp_url&entry.489691155=${chatId}`;
     }
 }
