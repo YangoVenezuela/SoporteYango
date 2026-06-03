@@ -10,10 +10,9 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-console.log("🚀 Bot de Yango optimizado con enlaces pre-rellenados REALES...");
+console.log("🚀 Servidor del Bot de Yango arrancando en modo Ultra-Resistente...");
 
 // --- CONFIGURACIÓN AUTOMÁTICA DEL MENÚ DE COMANDOS ---
-// Esto le pone un botón azul al usuario para que no tenga que escribir /start
 bot.setMyCommands([
     { command: 'start', description: '📱 Iniciar el Bot de Soporte / Menú Principal' }
 ]).then(() => {
@@ -31,7 +30,6 @@ function getFormUrl(tipo, chatId) {
         return `https://docs.google.com/forms/d/e/1FAIpQLSegmduBwLH33grUqRlj402wI06xAgsMjqrAl1Y2HikCzVJlIg/viewform?usp=pp_url&entry.556681313=${chatId}`;
     }
     if (tipo === 'recargas') {
-        // AQUÍ ESTÁ EL CAMBIO: Ya tiene tu número real 489691155
         return `https://docs.google.com/forms/d/e/1FAIpQLSds-p_CE8Tdu86kSytCt5h9zrZTXigJkApoc5axPFGKyOGG3g/viewform?usp=pp_url&entry.489691155=${chatId}`;
     }
 }
@@ -67,11 +65,11 @@ bot.on('callback_query', (callbackQuery) => {
     }
 
     if (data === 'menu_puntos') {
-        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos:", { 
+        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación se cargarán en segundo plano de forma automática:", { 
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Formulario de Puntos", url: getFormUrl('puntos', chatId) }],
+                    [{ text: "📝 Abrir Formulario de Puntos", url: getFormUrl('puntos', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
@@ -83,29 +81,29 @@ bot.on('callback_query', (callbackQuery) => {
             reply_markup: {
                 inline_keyboard: [
                     [{ text: "❌ Problemas con las recargas", callback_data: "form_recargas" }],
-                    [{ text: "👤 Problemas con pagos de usuarios", callback_data: "form_pagos_general" }],
+                    [{ text: "👤 Problemas con pagos en general", callback_data: "form_pagos_general" }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
     else if (data === 'form_recargas') {
-        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga:", {
+        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga. El sistema validará tu cuenta automáticamente:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Formulario de Recargas No Procesadas", url: getFormUrl('recargas', chatId) }],
+                    [{ text: "📝 Abrir Formulario de Recargas", url: getFormUrl('recargas', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
     else if (data === 'form_pagos_general') {
-        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace para reportar tu inconveniente con los pagos de usuarios:", {
+        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace oficial para reportar tu inconveniente con los pagos de la plataforma:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Formulario de Problemas con Pagos", url: getFormUrl('pagos', chatId) }],
+                    [{ text: "📝 Abrir Formulario de Pagos", url: getFormUrl('pagos', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
@@ -113,23 +111,27 @@ bot.on('callback_query', (callbackQuery) => {
     }
 });
 
-// --- RECEPTOR DE ALERTAS DESDE GOOGLE SHEETS ---
+// --- RECEPTOR DE ALERTAS DESDE GOOGLE SHEETS (REDISEÑADO POR COMPLETO) ---
 app.post('/webhook-google-forms', (req, res) => {
-    // Extraemos las variables que manda el Excel
     const { telegramId, tipoFormulario, cedula } = req.body;
 
-    console.log(`📥 Alerta recibida en Railway - Tipo: ${tipoFormulario}, ID: ${telegramId}`);
+    // Imprimir en consola de Railway para auditoría visual
+    console.log(`📥 [NUEVA ENTRADA] ID: ${telegramId} | Form: ${tipoFormulario} | Cédula: ${cedula}`);
 
     if (!telegramId) {
-        console.log("⚠️ Alerta ignorada: No se detectó un ID de Telegram válido.");
-        return res.status(200).send({ success: false, message: "No Telegram ID Provided" });
+        console.log("⚠️ Registro rechazado: No incluye un Telegram ID válido.");
+        return res.status(200).send({ success: false, error: "Missing Telegram ID" });
     }
 
     const identificador = cedula || "Registrado";
-    let mensaje;
+    let mensaje = "";
 
-    // 🎯 VALIDACIÓN: Si viene del cambio manual de estatus en el Excel
-    if (tipoFormulario === "ACTUALIZACION_STATUS" || tipoFormulario === "Soporte") {
+    // 🎯 NUEVO DETECTOR DETALLADO: Si es una actualización manual desde el Excel
+    // Compara en minúsculas y busca aproximaciones para evitar que falle por un espacio
+    const origen = String(tipoFormulario).toUpperCase().trim();
+    
+    if (origen.includes("STATUS") || origen.includes("ACTUALIZACION") || origen === "SOPORTE") {
+        console.log(`✨ Procesando notificación manual de estado para el ID: ${telegramId}`);
         mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
                   `----------------------------------\n` +
                   `🆔 *Cédula:* \`${identificador}\`\n` +
@@ -138,8 +140,9 @@ app.post('/webhook-google-forms', (req, res) => {
                   `📢 Estimado conductor, el sistema ha procesado la devolución de tus fondos de manera automática.\n\n` +
                   `⏳ Por favor, verifica el balance en tu aplicación en los próximos minutos.`;
     } 
-    // Si viene del envío normal de cualquiera de los formularios
+    // Si viene del envío automático normal de los formularios
     else {
+        console.log(`📝 Procesando confirmación de formulario para el ID: ${telegramId}`);
         mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGON*\n` +
                   `----------------------------------\n` +
                   `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
@@ -150,14 +153,20 @@ app.post('/webhook-google-forms', (req, res) => {
                   `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
     }
 
-    // Enviamos el mensaje final al conductor
+    // Ejecutar el envío hacia la API de Telegram de forma segura
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
-            console.log(`✅ Mensaje enviado con éxito a Telegram al ID: ${telegramId}`);
+            console.log(`✅ Mensaje enviado de forma exitosa a Telegram -> ID: ${telegramId}`);
         })
         .catch((err) => {
-            console.error(`❌ Error al enviar mensaje a Telegram:`, err);
+            console.error(`❌ Error crítico de la API de Telegram al enviar a ${telegramId}:`, err.message);
         });
     
+    // Respondemos con éxito total a Google Sheets
     return res.status(200).send({ success: true });
+});
+
+// Iniciar el servidor express
+app.listen(PORT, () => {
+    console.log(`📡 Servidor Webhook escuchando en el puerto ${PORT}`);
 });
