@@ -66,11 +66,11 @@ bot.on('callback_query', (callbackQuery) => {
     }
 
     if (data === 'menu_puntos') {
-        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación se cargarán en segundo plano de forma automática:", { 
+        bot.sendMessage(chatId, "🎯 *Restitución de puntos*\n\nPor favor, ingresa al siguiente enlace para completar tu reporte de puntos. Tus datos de validación (ID de Telegram) se cargarán en segundo plano de forma automática:", { 
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Puntos", url: getFormUrl('puntos', chatId) }],
+                    [{ text: "📝 Formulario de Puntos", url: getFormUrl('puntos', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
@@ -82,29 +82,29 @@ bot.on('callback_query', (callbackQuery) => {
             reply_markup: {
                 inline_keyboard: [
                     [{ text: "❌ Problemas con las recargas", callback_data: "form_recargas" }],
-                    [{ text: "👤 Problemas con pagos en general", callback_data: "form_pagos_general" }],
+                    [{ text: "👤 Problemas con pagos de usuarios", callback_data: "form_pagos_general" }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
     else if (data === 'form_recargas') {
-        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga. El sistema validará tu cuenta automáticamente:", {
+        bot.sendMessage(chatId, "📥 *Recargas no procesadas*\n\nPor favor, ingresa al enlace para reportar el inconveniente con tu recarga:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Recargas", url: getFormUrl('recargas', chatId) }],
+                    [{ text: "📝 Formulario de Recargas No Procesadas", url: getFormUrl('recargas', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
         });
     }
     else if (data === 'form_pagos_general') {
-        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace oficial para reportar tu inconveniente con los pagos de la plataforma:", {
+        bot.sendMessage(chatId, "👤 *Problemas con pagos*\n\nPor favor, ingresa al siguiente enlace para reportar tu inconveniente con los pagos de usuarios:", {
             parse_mode: 'Markdown',
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "📝 Abrir Formulario de Pagos", url: getFormUrl('pagos', chatId) }],
+                    [{ text: "📝 Formulario de Problemas con Pagos", url: getFormUrl('pagos', chatId) }],
                     [{ text: "🔙 Volver al Inicio", callback_data: "menu_inicio" }]
                 ]
             }
