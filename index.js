@@ -132,13 +132,14 @@ app.post('/webhook-google-forms', (req, res) => {
     
     if (origen.includes("STATUS") || origen.includes("ACTUALIZACION") || origen === "SOPORTE") {
         console.log(`✨ Procesando notificación manual de estado para el ID: ${telegramId}`);
-        mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
-                  `----------------------------------\n` +
-                  `🆔 *Cédula:* \`${identificador}\`\n` +
-                  `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
-                  `----------------------------------\n` +
-                  `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado.\n\n` +
-                  `⏳ Por favor, ingresa a tu aplicación para verificar la actualización.`;
+        mensaje =   `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
+                    `----------------------------------\n` +
+                    `🆔 *Cédula:* \`${identificador}\`\n` +
+                    `⚙️ *Nuevo Estado:* Devolución automática 💳\n` +
+                    `----------------------------------\n` +
+                    `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado.\n\n` +
+                    `⏳ Por favor, ingresa a tu aplicación para verificar la actualización.\n\n` +
+                    `🏢 *Para cualquier duda, consulta a tu socio en su sede.*`;
     } 
     // Si viene del envío automático normal de los formularios
     else {
