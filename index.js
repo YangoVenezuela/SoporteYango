@@ -111,55 +111,55 @@ bot.on('callback_query', (callbackQuery) => {
     }
 });
 
-// --- DICCIONARIO DE TEXTOS BASADO EN LAS IMÁGENES ---
+// --- DICCIONARIO EXCLUSIVO: TEXTOS LITERALES DE LAS IMÁGENES ---
 const MENSAJES_ESTADO = {
     "Falta comprobante bancario": 
-        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario* del pago realizado en el formulario\n\n` +
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario* del pago realizado en el formulario\n` +
         `📌 *¿Qué debes hacer?*\n` +
-        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
         `¡Gracias por tu colaboración!`,
 
     "Faltan datos": 
-        `📢 Estimado conductor, hemos revisado tu requerimiento pero los datos suministrados en el formulario están *incompletos o son incorrectos*\n\n` +
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero los datos suministrados en el formulario están *incompletos o son incorrectos*\n` +
         `📌 *¿Qué debes hacer?*\n` +
-        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
         `¡Gracias por tu colaboración!`,
 
     "No aplica": 
-        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
-        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de fondos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n\n` +
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de fondos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n` +
         `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
 
     "Listo": 
-        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n\n` +
-        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización del saldo.\n\n` +
+        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n` +
+        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización del saldo.\n` +
         `🏢 Para cualquier duda adicional, consulta con tu socio en su sede.`,
 
     "Recarga previamente efectiva": 
-        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
-        `⚠️ Tras la auditoría del sistema, se determinó que *tu saldo ya había sido sumado en tu billetera*.\n\n` +
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *tu saldo ya había sido sumado en tu billetera*.\n` +
         `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
 
     "No aplica devolución": 
-        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
-        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de puntos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n\n` +
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de puntos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n` +
         `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
 
     "Puntos devueltos": 
-        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n\n` +
-        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización de tus puntos.\n\n` +
+        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n` +
+        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización de tus puntos.\n` +
         `🏢 Para cualquier duda adicional, consulta con tu socio en su sede.`,
 
     "Falta comprobante usuario": 
-        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario del pago que te hizo el usuario* en el formulario.\n\n` +
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario del pago que te hizo el usuario* en el formulario.\n` +
         `📌 *¿Qué debes hacer?*\n` +
-        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
         `¡Gracias por tu colaboración!`,
 
     "Sin archivos": 
-        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar la captura del viaje y el comprobante bancario del usuario* en el formulario.\n\n` +
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar la captura del viaje y el comprobante bancario del usuario* en el formulario.\n` +
         `📌 *¿Qué debes hacer?*\n` +
-        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
         `¡Gracias por tu colaboración!`
 };
 
@@ -177,17 +177,15 @@ app.post('/webhook-google-forms', (req, res) => {
     let mensaje = "";
 
     if (esActualizacionManual) {
-        // Buscamos el texto exacto en nuestro diccionario usando lo que vino de la celda "Status"
+        // Busca estrictamente en la lista. Si existe, lo asigna sin agregar nada más
         const textoBase = MENSAJES_ESTADO[estadoManual];
-        
         if (textoBase) {
             mensaje = textoBase;
         } else {
-            // Mensaje genérico por si escriben en el Excel algo que no esté en las fotos
             mensaje = `📢 *Actualización de tu reporte Yango*\n\nTu requerimiento ha cambiado al estado: *${estadoManual}*.`;
         }
     } else {
-        // Confirmación normal de entrada de formulario vacío o inicial
+        // Mensaje del comprobante inicial cuando envían el formulario por primera vez
         const identificador = cedula || "Registrada";
         mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
                   `----------------------------------\n` +
@@ -198,13 +196,13 @@ app.post('/webhook-google-forms', (req, res) => {
                   `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
     }
 
-    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ (Al implementar como App Web en Google)
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycby6VCsm89C4lLRfUOpMMejTeOwkb5rDXovKnlV-1H44qLMtSKivTlGuOZfvQNuNnaOWjg/exec";
+    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ
+    const URL_APPS_SCRIPT = "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ";
 
-    // Enviar a Telegram
+    // Envío a Telegram
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
-            console.log(`✅ Enviado con éxito a ID: ${telegramId}`);
+            console.log(`✅ Mensaje enviado con éxito a ID: ${telegramId}`);
             if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
@@ -214,11 +212,10 @@ app.post('/webhook-google-forms', (req, res) => {
             }
         })
         .catch((err) => {
-            console.error(`❌ Error enviando a ID ${telegramId}:`, err.message);
+            console.error(`❌ Error enviando a Telegram ID ${telegramId}:`, err.message);
             if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
                 let respuestaFallo = "Telegram (Sin enviar)";
                 
-                // Detalles específicos del fallo en la celda
                 if (err.message.includes("bot was blocked by the user")) {
                     respuestaFallo = "Telegram (Sin enviar - Bloqueado)";
                 } else if (err.message.includes("chat not found")) {
