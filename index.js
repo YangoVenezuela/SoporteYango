@@ -1,12 +1,12 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const fetch = require('node-fetch'); // 🔄 Nueva dependencia para responderle a Google Sheets
+const fetch = require('node-fetch');
 
 // 1. CONFIGURACIÓN DEL BOT
 const TOKEN = process.env.TELEGRAM_TOKEN; 
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// 2. CONFIGURACIÓN DEL SERVIDOR WEB (WEBHOOK)
+// 2. CONFIGURACIÓN DEL SERVIDOR WEB
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
@@ -22,7 +22,7 @@ bot.setMyCommands([
     console.error("❌ Error al configurar comandos:", err);
 });
 
-// --- CONSTRUCTOR DE ENLACES INVISIBLES CON TUS ENTRADAS REALES ---
+// --- CONSTRUCTOR DE ENLACES INVISIBLES ---
 function getFormUrl(tipo, chatId) {
     if (tipo === 'pagos') {
         return `https://docs.google.com/forms/d/e/1FAIpQLSe_bLP8Upgn3nmJTCUJ3z7hsQ1e7nhk5Bv7J4fGB9CMw4EfPA/viewform?usp=pp_url&entry.1544457333=${chatId}`;
@@ -47,12 +47,11 @@ function sendMainMenu(chatId) {
     });
 }
 
-// Escuchar comando /start
 bot.onText(/\/start/, (msg) => {
     sendMainMenu(msg.chat.id);
 });
 
-// --- ENRUTADOR DE BOTONES (TELEGRAM) ---
+// --- ENRUTADOR DE BOTONES ---
 bot.on('callback_query', (callbackQuery) => {
     const msg = callbackQuery.message;
     const chatId = msg.chat.id;
@@ -112,120 +111,131 @@ bot.on('callback_query', (callbackQuery) => {
     }
 });
 
-// --- RECEPTOR DE ALERTAS DESDE GOOGLE SHEETS (REDISEÑADO CON NUEVOS ESTADOS Y FEEDBACK) ---
+// --- DICCIONARIO DE TEXTOS BASADO EN LAS IMÁGENES ---
+const MENSAJES_ESTADO = {
+    "Falta comprobante bancario": 
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario* del pago realizado en el formulario\n\n` +
+        `📌 *¿Qué debes hacer?*\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `¡Gracias por tu colaboración!`,
+
+    "Faltan datos": 
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero los datos suministrados en el formulario están *incompletos o son incorrectos*\n\n` +
+        `📌 *¿Qué debes hacer?*\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `¡Gracias por tu colaboración!`,
+
+    "No aplica": 
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de fondos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n\n` +
+        `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
+
+    "Listo": 
+        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n\n` +
+        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización del saldo.\n\n` +
+        `🏢 Para cualquier duda adicional, consulta con tu socio en su sede.`,
+
+    "Recarga previamente efectiva": 
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *tu saldo ya había sido sumado en tu billetera*.\n\n` +
+        `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
+
+    "No aplica devolución": 
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
+        `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de puntos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n\n` +
+        `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`,
+
+    "Puntos devueltos": 
+        `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n\n` +
+        `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización de tus puntos.\n\n` +
+        `🏢 Para cualquier duda adicional, consulta con tu socio en su sede.`,
+
+    "Falta comprobante usuario": 
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar el comprobante bancario del pago que te hizo el usuario* en el formulario.\n\n` +
+        `📌 *¿Qué debes hacer?*\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `¡Gracias por tu colaboración!`,
+
+    "Sin archivos": 
+        `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar la captura del viaje y el comprobante bancario del usuario* en el formulario.\n\n` +
+        `📌 *¿Qué debes hacer?*\n` +
+        `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
+        `¡Gracias por tu colaboración!`
+};
+
+// --- RECEPTOR DE WEBHOOK ---
 app.post('/webhook-google-forms', (req, res) => {
     const { telegramId, tipoFormulario, cedula, nombreHoja, fila, estadoManual } = req.body;
 
-    console.log(`📥 [NUEVA ENTRADA] ID: ${telegramId} | Form/Origen: ${tipoFormulario} | Estado Manual: ${estadoManual}`);
-
     if (!telegramId) {
-        console.log("⚠️ Registro rechazado: No incluye un Telegram ID válido.");
         return res.status(200).send({ success: false, error: "Missing Telegram ID" });
     }
 
-    const identificador = cedula || "Registrado";
-    let mensaje = "";
-    
     const origen = String(tipoFormulario).toUpperCase().trim();
     const esActualizacionManual = (origen === "ACTUALIZACION_STATUS");
 
-    // 1. GENERACIÓN DE MENSAJES SEGÚN EL CASO
+    let mensaje = "";
+
     if (esActualizacionManual) {
-        console.log(`✨ Procesando notificación manual [${estadoManual}] para el ID: ${telegramId}`);
+        // Buscamos el texto exacto en nuestro diccionario usando lo que vino de la celda "Status"
+        const textoBase = MENSAJES_ESTADO[estadoManual];
         
-        if (estadoManual === "Devolución automática") {
-            mensaje = `🔄 *ACTUALIZACIÓN DE TU REPORTE*\n` +
-                      `----------------------------------\n` +
-                      `🆔 *Cédula:* \`${identificador}\`\n` +
-                      `⚙️ *Estado:* Devolución aprobada 💳\n` +
-                      `----------------------------------\n` +
-                      `📢 Estimado conductor, te informamos que tu requerimiento ha sido procesado con éxito.\n\n` +
-                      `⏳ Por favor, ingresa a tu aplicación de conductor en las próximas horas para verificar la actualización del saldo.\n\n` +
-                      `🏢 *Para cualquier duda adicional, consulta con tu socio tecnológico en su sede.*`;
-        } 
-        else if (estadoManual === "Faltan datos") {
-            mensaje = `⚠️ *REPORTE RECHAZADO / FALTAN DATOS*\n` +
-                      `----------------------------------\n` +
-                      `🆔 *Cédula:* \`${identificador}\`\n` +
-                      `⚙️ *Estado:* Información Incompleta 📝\n` +
-                      `----------------------------------\n` +
-                      `📢 Estimado conductor, hemos revisado tu requerimiento pero los datos suministrados en el formulario están *incompletos o son incorrectos*.\n\n` +
-                      `📌 *¿Qué debes hacer?*\n` +
-                      `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n\n` +
-                      `¡Gracias por tu colaboración!`;
-        } 
-        else if (estadoManual === "No aplica") {
-            mensaje = `🚫 *NOTIFICACIÓN DE SOPORTE YANGO*\n` +
-                      `----------------------------------\n` +
-                      `🆔 *Cédula:* \`${identificador}\`\n` +
-                      `⚙️ *Estado:* No Aplica Reembolso ❌\n` +
-                      `----------------------------------\n` +
-                      `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n\n` +
-                      `⚠️ Tras la auditoría del sistema, se determinó que *no aplica la devolución de fondos*, debido a que el caso reportado no cumple con las políticas y condiciones requeridas para la restitución automática.\n\n` +
-                      `🏢 *Para mayor información detallada sobre tu caso, ponte en contacto directo con tu socio asignado.*`;
-        } 
-        else {
-            // Caso de respaldo por si mandan un estado no programado
-            mensaje = `🔄 *ACTUALIZACIÓN DE SOPORTE YANGO*\n\nTu solicitud asociada a la identificación \`${identificador}\` ha cambiado de estado a: *${estadoManual}*.`;
+        if (textoBase) {
+            mensaje = textoBase;
+        } else {
+            // Mensaje genérico por si escriben en el Excel algo que no esté en las fotos
+            mensaje = `📢 *Actualización de tu reporte Yango*\n\nTu requerimiento ha cambiado al estado: *${estadoManual}*.`;
         }
-    } 
-    // Si viene del envío automático normal de los formularios cuando el usuario responde
-    else {
-        console.log(`📝 Procesando confirmación de formulario de entrada para el ID: ${telegramId}`);
+    } else {
+        // Confirmación normal de entrada de formulario vacío o inicial
+        const identificador = cedula || "Registrada";
         mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
                   `----------------------------------\n` +
                   `🆔 *Identificación / Cédula:* \`${identificador}\`\n` +
                   `📁 *Categoría:* ${tipoFormulario}\n` +
-                  `👤 *Agente:* Sistema Automático\n` +
                   `----------------------------------\n` +
-                  `✅ Tu reporte ha sido recibido con éxito en nuestra base de datos.\n\n` +
+                  `✅ Tu reporte ha sido recibido con éxito.\n\n` +
                   `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
     }
 
-    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ (La obtienes al implementar en Google)
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyUGj6JUbPH-biRQa7mYWi0iD5xZbHS58Fs20Xu6_s6Dk1G6O2Z6RsN3pxztUDP3mdI/exec";
+    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ (Al implementar como App Web en Google)
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycby6VCsm89C4lLRfUOpMMejTeOwkb5rDXovKnlV-1H44qLMtSKivTlGuOZfvQNuNnaOWjg/exec";
 
-    // 2. EJECUTAR ENVÍO A TELEGRAM Y RESPONDER AL EXCEL
+    // Enviar a Telegram
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
-            console.log(`✅ Mensaje enviado con éxito a Telegram -> ID: ${telegramId}`);
-            
-            // Si fue manual, le avisamos a Google Sheets que se entregó bien
+            console.log(`✅ Enviado con éxito a ID: ${telegramId}`);
             if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
                     body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Telegram (Enviado)" }),
                     headers: { 'Content-Type': 'application/json' }
-                }).catch(err => console.error("Error al actualizar Excel (Éxito):", err.message));
+                }).catch(err => console.error("Error actualizando Excel:", err.message));
             }
         })
         .catch((err) => {
-            console.error(`❌ Error al enviar a Telegram ID ${telegramId}:`, err.message);
-            
-            // Si fue manual y falló, le mandamos el texto de fallo personalizado
+            console.error(`❌ Error enviando a ID ${telegramId}:`, err.message);
             if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
-                let razonFallo = "Telegram (Sin enviar)";
+                let respuestaFallo = "Telegram (Sin enviar)";
                 
-                // Agregamos contexto útil directo en la celda si Telegram nos da el motivo
+                // Detalles específicos del fallo en la celda
                 if (err.message.includes("bot was blocked by the user")) {
-                    razonFallo = "Telegram (Sin enviar - Bloqueado)";
+                    respuestaFallo = "Telegram (Sin enviar - Bloqueado)";
                 } else if (err.message.includes("chat not found")) {
-                    razonFallo = "Telegram (Sin enviar - ID Inválido)";
+                    respuestaFallo = "Telegram (Sin enviar - ID Inválido)";
                 }
 
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
-                    body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: razonFallo }),
+                    body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: respuestaFallo }),
                     headers: { 'Content-Type': 'application/json' }
-                }).catch(err => console.error("Error al actualizar Excel (Fallo):", err.message));
+                }).catch(err => console.error("Error actualizando Excel:", err.message));
             }
         });
-    
-    // Respondemos rápido al webhook inicial
+
     return res.status(200).send({ success: true });
 });
 
-// Iniciar el servidor express
 app.listen(PORT, () => {
     console.log(`📡 Servidor Webhook escuchando en el puerto ${PORT}`);
 });
