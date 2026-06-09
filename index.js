@@ -174,18 +174,20 @@ app.post('/webhook-google-forms', (req, res) => {
     const origen = String(tipoFormulario).toUpperCase().trim();
     const esActualizacionManual = (origen === "ACTUALIZACION_STATUS");
 
-    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ
+    // URL Real de tu App Web de Google
     const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzCRRD7taeyqnY9yz89CC812wpqo-aIudiwRBhMH54I5w-XhSG3F5d84AeeevmLteywSQ/exec";
 
-    // 🔥 VALIDACIÓN DE CONTROL INTERNO: Si es En revisión, no enviar mensaje y actualizar Excel directo
+    // 🔥 CONTROL INTERNO SÚPER LIMPIO: Si es En revisión o En revision, frena el flujo y actualiza la celda a "Interno"
     if (esActualizacionManual && (estadoManual === "En revision" || estadoManual === "En revisión")) {
-        console.log(`🔒 Control interno: Se omitió el envío a Telegram para ID ${telegramId}`);
-        if (fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
+        console.log(`🔒 Control interno activado: Omitiendo Telegram para ID ${telegramId}`);
+        if (fila) {
             fetch(URL_APPS_SCRIPT, {
                 method: 'POST',
                 body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Interno" }),
                 headers: { 'Content-Type': 'application/json' }
-            }).catch(err => console.error("Error actualizando Excel:", err.message));
+            })
+            .then(() => console.log("✅ Excel actualizado a 'Interno' correctamente."))
+            .catch(err => console.error("❌ Error enviando 'Interno' al Excel:", err.message));
         }
         return res.status(200).send({ success: true, status: "interno" });
     }
@@ -214,17 +216,19 @@ app.post('/webhook-google-forms', (req, res) => {
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
             console.log(`✅ Mensaje enviado con éxito a ID: ${telegramId}`);
-            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
+            if (esActualizacionManual && fila) {
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
                     body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Telegram (Enviado)" }),
                     headers: { 'Content-Type': 'application/json' }
-                }).catch(err => console.error("Error actualizando Excel:", err.message));
+                })
+                .then(() => console.log("✅ Excel actualizado a 'Telegram (Enviado)' correctamente."))
+                .catch(err => console.error("❌ Error enviando éxito al Excel:", err.message));
             }
         })
         .catch((err) => {
             console.error(`❌ Error enviando a Telegram ID ${telegramId}:`, err.message);
-            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
+            if (esActualizacionManual && fila) {
                 let respuestaFallo = "Telegram (Sin enviar)";
                 
                 if (err.message.includes("bot was blocked by the user")) {
@@ -237,7 +241,9 @@ app.post('/webhook-google-forms', (req, res) => {
                     method: 'POST',
                     body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: respuestaFallo }),
                     headers: { 'Content-Type': 'application/json' }
-                }).catch(err => console.error("Error actualizando Excel:", err.message));
+                })
+                .then(() => console.log(`❌ Excel actualizado a fallo: ${respuestaFallo}`))
+                .catch(err => console.error("❌ Error enviando fallo al Excel:", err.message));
             }
         });
 
