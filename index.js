@@ -203,7 +203,7 @@ app.post('/webhook-google-forms', (req, res) => {
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
             console.log(`✅ Mensaje enviado con éxito a ID: ${telegramId}`);
-            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
+            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "https://script.google.com/macros/s/AKfycby0NRR4P80hWFTMPmW7g_prB8AuBRbV0gr5GLDoyQjQWD_t3WYvqYJNQ4j3hVP8X0V5uQ/exec") {
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
                     body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Telegram (Enviado)" }),
