@@ -174,10 +174,25 @@ app.post('/webhook-google-forms', (req, res) => {
     const origen = String(tipoFormulario).toUpperCase().trim();
     const esActualizacionManual = (origen === "ACTUALIZACION_STATUS");
 
+    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzCRRD7taeyqnY9yz89CC812wpqo-aIudiwRBhMH54I5w-XhSG3F5d84AeeevmLteywSQ/exec";
+
+    // 🔥 VALIDACIÓN DE CONTROL INTERNO: Si es En revisión, no enviar mensaje y actualizar Excel directo
+    if (esActualizacionManual && (estadoManual === "En revision" || estadoManual === "En revisión")) {
+        console.log(`🔒 Control interno: Se omitió el envío a Telegram para ID ${telegramId}`);
+        if (fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
+            fetch(URL_APPS_SCRIPT, {
+                method: 'POST',
+                body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Interno" }),
+                headers: { 'Content-Type': 'application/json' }
+            }).catch(err => console.error("Error actualizando Excel:", err.message));
+        }
+        return res.status(200).send({ success: true, status: "interno" });
+    }
+
     let mensaje = "";
 
     if (esActualizacionManual) {
-        // Busca estrictamente en la lista. Si existe, lo asigna sin agregar nada más
         const textoBase = MENSAJES_ESTADO[estadoManual];
         if (textoBase) {
             mensaje = textoBase;
@@ -185,7 +200,6 @@ app.post('/webhook-google-forms', (req, res) => {
             mensaje = `📢 *Actualización de tu reporte Yango*\n\nTu requerimiento ha cambiado al estado: *${estadoManual}*.`;
         }
     } else {
-        // Mensaje del comprobante inicial cuando envían el formulario por primera vez
         const identificador = cedula || "Registrada";
         mensaje = `🧾 *COMPROBANTE DE SOPORTE YANGO*\n` +
                   `----------------------------------\n` +
@@ -196,14 +210,11 @@ app.post('/webhook-google-forms', (req, res) => {
                   `⏳ Tendremos una respuesta para ti en un lapso *menor a 24 horas*.`;
     }
 
-    // ⚠️ COLOCA TU URL DE APPS SCRIPT AQUÍ
-    const URL_APPS_SCRIPT = "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ";
-
-    // Envío a Telegram
+    // Envío Regular a Telegram
     bot.sendMessage(telegramId, mensaje, { parse_mode: 'Markdown' })
         .then(() => {
             console.log(`✅ Mensaje enviado con éxito a ID: ${telegramId}`);
-            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "https://script.google.com/macros/s/AKfycby0NRR4P80hWFTMPmW7g_prB8AuBRbV0gr5GLDoyQjQWD_t3WYvqYJNQ4j3hVP8X0V5uQ/exec") {
+            if (esActualizacionManual && fila && URL_APPS_SCRIPT !== "TU_URL_DE_WEB_APP_DE_APPS_SCRIPT_AQUÍ") {
                 fetch(URL_APPS_SCRIPT, {
                     method: 'POST',
                     body: JSON.stringify({ fila: fila, nombreHoja: nombreHoja, resultado: "Telegram (Enviado)" }),
