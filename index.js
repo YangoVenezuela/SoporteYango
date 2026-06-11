@@ -160,7 +160,7 @@ const MENSAJES_ESTADO = {
         `📢 Estimado conductor, hemos revisado tu requerimiento pero *olvidaste adjuntar la captura del viaje y el comprobante bancario del usuario* en el formulario.\n` +
         `📌 *¿Qué debes hacer?*\n` +
         `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
-        `¡Gracias por tu colaboración!`
+        `¡Gracias por tu colaboración!`,
 
     "Problemas con branding":
         `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n` +
