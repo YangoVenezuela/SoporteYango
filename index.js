@@ -161,6 +161,11 @@ const MENSAJES_ESTADO = {
         `📌 *¿Qué debes hacer?*\n` +
         `Por favor, abre nuevamente el menú de este bot utilizando el comando /start, selecciona tu categoría e ingresa al enlace para rellenar el formulario asegurándote de escribir correctamente todos los datos solicitados.\n` +
         `¡Gracias por tu colaboración!`
+
+    "Problemas con branding":
+        `📢 Estimado conductor, te informamos que tu solicitud fue recibida y evaluada minuciosamente por nuestro equipo técnico.\n` +
+        `📌 *¿Qué debes hacer?*\n` +
+        `Si presentas problemas con la *verificación de marca (branding)*, por favor intenta nuevamente la *verificación fotográfica*. Si el problema persiste, ponte en contacto directo con tu *socio asignado*.`
 };
 
 // --- RECEPTOR DE WEBHOOK ---
