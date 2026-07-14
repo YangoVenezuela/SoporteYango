@@ -180,7 +180,7 @@ app.post('/webhook-google-forms', (req, res) => {
     const esActualizacionManual = (origen === "ACTUALIZACION_STATUS");
 
     // URL Real de tu App Web de Google
-    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbzzkr6y8nyvAOolLxAMytVE_kxf1g-jfUqj77hcyOPP--5gwQnsH4VhFN3CgWZ4tzvXYw/exec";
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycby4b_-hET2hTDCcbvmGwjOcJaxqCwY-WgLRIaJA_b-KhCHcvo4RTtNUNr45GdU8XPQ2_w/exec";
 
     // 🔥 CONTROL INTERNO SÚPER LIMPIO: Si es En revisión o En revision, frena el flujo y actualiza la celda a "Interno"
     if (esActualizacionManual && (estadoManual === "En revision" || estadoManual === "En revisión")) {
